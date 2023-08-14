@@ -1,0 +1,41 @@
+{
+    "name": "imjonos/discord-messages",
+    "description": "DB Adapters",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eugeny Nosenko",
+            "email": "info@toprogram.ru",
+            "homepage": "https://toprogram.ru"
+        }
+    ],
+    "homepage": "https://github.com/imjonos/db-adapters",
+    "keywords": [
+        "DB",
+        "Clickhouse",
+        "MySQL",
+        "PDO",
+        "PHP",
+        "Webhook"
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-pdo": "*",
+        "smi2/phpclickhouse": "^1.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nos\\DbAdapters\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+            ]
+        }
+    }
+}
