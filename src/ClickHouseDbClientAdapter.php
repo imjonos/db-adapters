@@ -8,28 +8,71 @@ use Nos\DbAdapters\Interfaces\DbClientAdapterInterface;
 
 final class ClickHouseDbClientAdapter implements DbClientAdapterInterface
 {
-    private const TIMEOUT = 10;
-    private const CONNECTION_TIMEOUT = 5;
-    private const PING = true;
-    private Client $client;
+    private int $timeout = 10;
+    private int $connectionTimeout = 5;
+    private bool $ping = true;
+    private ?Client $client = null;
 
-    public function __construct(string $host, string $user, string $password, string $db, int $port = 8123)
+    public function __construct(
+        private readonly string $host,
+        private readonly string $user,
+        private readonly string $password,
+        private readonly string $db,
+        private readonly int $port = 8123
+    ) {
+    }
+
+    /**
+     * @return int
+     */
+    public function getTimeout(): int
     {
-        $this->client = new Client([
-            'host' => $host,
-            'port' => $port,
-            'username' => $user,
-            'password' => $password
-        ]);
-        $this->client->database($db);
-        $this->client->setTimeout(self::TIMEOUT);       // 10 seconds
-        $this->client->setConnectTimeOut(self::CONNECTION_TIMEOUT); // 5 seconds
-        $this->client->ping(self::PING);
+        return $this->timeout;
+    }
+
+    /**
+     * @param int $timeout
+     */
+    public function setTimeout(int $timeout): void
+    {
+        $this->timeout = $timeout;
+    }
+
+    /**
+     * @return int
+     */
+    public function getConnectionTimeout(): int
+    {
+        return $this->connectionTimeout;
+    }
+
+    /**
+     * @param int $connectionTimeout
+     */
+    public function setConnectionTimeout(int $connectionTimeout): void
+    {
+        $this->connectionTimeout = $connectionTimeout;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPing(): bool
+    {
+        return $this->ping;
+    }
+
+    /**
+     * @param bool $ping
+     */
+    public function setPing(bool $ping): void
+    {
+        $this->ping = $ping;
     }
 
     public function close(): void
     {
-        // TODO: Implement close() method.
+        $this->client = null;
     }
 
     /**
@@ -49,6 +92,19 @@ final class ClickHouseDbClientAdapter implements DbClientAdapterInterface
 
     public function getClient(): Client
     {
+        if (!$this->client) {
+            $this->client = new Client([
+                'host' => $this->host,
+                'port' => $this->port,
+                'username' => $this->user,
+                'password' => $this->password
+            ]);
+            $this->client->database($this->db);
+            $this->client->setTimeout($this->timeout);       // 10 seconds
+            $this->client->setConnectTimeOut($this->connectionTimeout); // 5 seconds
+            $this->client->ping($this->ping);
+        }
+
         return $this->client;
     }
 
