@@ -13,8 +13,11 @@ $ composer require imjonos/db-adapters
 ## How to use
 
 Supported 2 connection types: <br>
-PDO - \Nos\DbAdapters\MysqlDbClientAdapter::class <br>
-HTTP (smi2/phpclickhouse) - \Nos\DbAdapters\ClickHouseDbClientAdapter::class <br>
+
+MySQL (PDO) - \Nos\DbAdapters\MysqlDbClientAdapter::class <br>
+Clickhouse (smi2/phpclickhouse) - \Nos\DbAdapters\ClickHouseDbClientAdapter::class <br>
+<br>
+For the Clickhouse also can be use \Nos\DbAdapters\MysqlDbClientAdapter::class via MySQL interface.
 
 ``` php
 interface DbClientAdapterInterface
