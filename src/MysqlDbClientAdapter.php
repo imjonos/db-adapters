@@ -50,30 +50,17 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
 
     public function save(string $table, array $data): int
     {
-        $id = 0;
-        if (isset($data['id'])) {
-            $id = (int) $data['id'];
-            unset($data['id']);
-        }
         $columnNames = array_keys($data);
-        if (!$id) {
-            $columns = implode(',', $columnNames);
-            $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
-            $sql = 'INSERT INTO ' . $table . ' (' . $columns . ') VALUES (' . $values . ')';
-        } else {
-            $values = implode(',', array_map(fn($item) => $item . ' = :' . $item, $columnNames));
-            $sql = 'UPDATE ' . $table . ' SET ' . $values . ' WHERE id=' . $id;
-        }
-
+        $columns = implode(',', $columnNames);
+        $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
+        $sql = sprintf('REPLACE INTO %s (%s) VALUES (%s)',$table, $columns,  $values);
+           
         $this->getClient()
             ->prepare($sql)
             ->execute($data);
-        if (!$id) {
-            $id = $this->getClient()
-                ->lastInsertId();
-        }
-
-        return $id;
+        
+        return (int) $this->getClient()
+            ->lastInsertId();
     }
 
     public function showTables(): array
