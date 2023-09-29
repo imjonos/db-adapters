@@ -48,20 +48,34 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
         $this->getClient()->exec($query);
     }
 
-    public function save(string $table, array $data): int
+    public function save(string $table, array $data, string $primaryKey = 'id'): int
     {
+        $id = 0;
+        if (isset($data[$primaryKey])) {
+            $id = (int) $data[$primaryKey];
+            unset($data[$primaryKey]);
+        }
         $columnNames = array_keys($data);
-        $columns = implode(',', $columnNames);
-        $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
-        $sql = sprintf('REPLACE INTO %s (%s) VALUES (%s)',$table, $columns,  $values);
-           
+        if (!$id) {
+            $columns = implode(',', $columnNames);
+            $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
+            $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $columns, $values);
+        } else {
+            $values = implode(',', array_map(fn($item) => $item . ' = :' . $item, $columnNames));
+            $sql = sprintf('UPDATE %s SET %s WHERE %s=%s', $table, $values, $primaryKey, $id);
+        }
+
         $this->getClient()
             ->prepare($sql)
             ->execute($data);
-        
-        return (int) $this->getClient()
-            ->lastInsertId();
+        if (!$id) {
+            $id = $this->getClient()
+                ->lastInsertId();
+        }
+
+        return $id;
     }
+
 
     public function showTables(): array
     {
