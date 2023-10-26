@@ -55,9 +55,10 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
             $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
             $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $columns, $values);
         } else {
+            $value = $data[$primaryKey];
             unset($data[$primaryKey]);
             $values = implode(',', array_map(fn($item) => $item . ' = :' . $item, $columnNames));
-            $sql = sprintf('UPDATE %s SET %s WHERE %s=\'%s\'', $table, $values, $primaryKey, $data[$primaryKey]);
+            $sql = sprintf('UPDATE %s SET %s WHERE %s=\'%s\'', $table, $values, $primaryKey, $value);
         }
 
         $this->getClient()
