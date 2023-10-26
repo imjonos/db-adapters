@@ -44,8 +44,12 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
     {
         $result = null;
         $exists = false;
+        $value = null;
         if (isset($data[$primaryKey])) {
             $value = $data[$primaryKey];
+            if (is_string($value)) {
+                $value = '\'' . $value . '\'';
+            }
             $sqlExists = sprintf('SELECT * FROM %s WHERE %s=\'%s\' LIMIT 1', $table, $primaryKey, $value);
             $exists = $this->selectOne($sqlExists);
         }
@@ -55,7 +59,6 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
             $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
             $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $columns, $values);
         } else {
-            $value = $data[$primaryKey];
             unset($data[$primaryKey]);
             $values = implode(',', array_map(fn($item) => $item . ' = :' . $item, $columnNames));
             $sql = sprintf('UPDATE %s SET %s WHERE %s=\'%s\'', $table, $values, $primaryKey, $value);
