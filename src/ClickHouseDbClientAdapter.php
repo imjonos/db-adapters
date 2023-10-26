@@ -128,9 +128,10 @@ final class ClickHouseDbClientAdapter implements DbClientAdapterInterface
         $this->getClient()->write($query);
     }
 
-    public function save(string $table, array $data, string $primaryKey = 'id'): int
+    public function save(string $table, array $data, string $primaryKey = 'id'): mixed
     {
         // TODO: Implement save() method.
+        return null;
     }
 
     public function showTables(): array

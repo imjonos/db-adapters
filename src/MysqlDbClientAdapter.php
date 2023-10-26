@@ -23,12 +23,9 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
         $this->client = null;
     }
 
-    public function selectOne(string $query, array $bindings = []): ?array
+    public function exec(string $query): void
     {
-        $result = $this->getClient()->prepare($query);
-        $result->execute($bindings);
-
-        return $result->fetch(PDO::FETCH_ASSOC) ?: null;
+        $this->getClient()->exec($query);
     }
 
     public function getClient(): PDO
@@ -43,39 +40,44 @@ final class MysqlDbClientAdapter implements DbClientAdapterInterface
         return $this->client;
     }
 
-    public function exec(string $query): void
+    public function save(string $table, array $data, string $primaryKey = 'id'): mixed
     {
-        $this->getClient()->exec($query);
-    }
-
-    public function save(string $table, array $data, string $primaryKey = 'id'): int
-    {
-        $id = 0;
+        $result = null;
+        $exists = false;
         if (isset($data[$primaryKey])) {
-            $id = (int) $data[$primaryKey];
-            unset($data[$primaryKey]);
+            $value = $data[$primaryKey];
+            $sqlExists = sprintf('SELECT * FROM %s WHERE %s=\'%s\' LIMIT 1', $table, $primaryKey, $value);
+            $exists = $this->selectOne($sqlExists);
         }
         $columnNames = array_keys($data);
-        if (!$id) {
+        if (!$exists) {
             $columns = implode(',', $columnNames);
             $values = implode(',', array_map(fn($item) => ':' . $item, $columnNames));
             $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $columns, $values);
         } else {
+            unset($data[$primaryKey]);
             $values = implode(',', array_map(fn($item) => $item . ' = :' . $item, $columnNames));
-            $sql = sprintf('UPDATE %s SET %s WHERE %s=%s', $table, $values, $primaryKey, $id);
+            $sql = sprintf('UPDATE %s SET %s WHERE %s=\'%s\'', $table, $values, $primaryKey, $data[$primaryKey]);
         }
 
         $this->getClient()
             ->prepare($sql)
             ->execute($data);
-        if (!$id) {
-            $id = $this->getClient()
+        if (!$exists) {
+            $result = $this->getClient()
                 ->lastInsertId();
         }
 
-        return $id;
+        return $result;
     }
 
+    public function selectOne(string $query, array $bindings = []): ?array
+    {
+        $result = $this->getClient()->prepare($query);
+        $result->execute($bindings);
+
+        return $result->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
 
     public function showTables(): array
     {

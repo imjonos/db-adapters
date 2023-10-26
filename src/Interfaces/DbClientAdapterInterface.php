@@ -12,7 +12,7 @@ interface DbClientAdapterInterface
 
     public function exec(string $query): void;
 
-    public function save(string $table, array $data, string $primaryKey = 'id'): int;
+    public function save(string $table, array $data, string $primaryKey = 'id'): mixed;
 
     public function showTables(): array;
 
